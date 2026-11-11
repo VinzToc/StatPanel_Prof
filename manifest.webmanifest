@@ -1,0 +1,33 @@
+{
+ "id": "./",
+ "name": "StatPanel - Prof",
+ "short_name": "StatPanel Prof",
+ "description": "Panneau de boutons pour compter et analyser des actions motrices ou d'arbitrage, enregistré dans Mes Apps EPS.",
+ "lang": "fr",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#020713",
+ "theme_color": "#06122d",
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icons/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}

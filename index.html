@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>StatPanel - Prof</title>
+<meta name="description" content="Panneau de boutons pour compter et analyser des actions motrices ou d'arbitrage, enregistré dans Mes Apps EPS.">
+<meta name="theme-color" content="#06122d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="statpanel.css">
+</head><body>
+<header class="top"><img src="icons/icon-192.png" alt=""><div><h1>StatPanel - Prof</h1><p>Compter, analyser, enregistrer dans Mes Apps EPS</p></div><span class="sp"></span><a class="btn s" href="https://vinztoc.github.io/Mes_Apps_EPS/">↩ Mes Apps EPS</a></header>
+
+<main>
+<!-- ACCUEIL -->
+<section id="vHome">
+ <div id="who" class="who"></div>
+ <div id="resume"></div>
+ <div class="card"><h2>🎛️ Mes panneaux</h2>
+  <div class="row" style="margin:0 0 14px"><button class="btn p" data-a="new">＋ Nouveau panneau</button><button class="btn" data-a="imp">📥 Importer des panneaux</button><button class="btn" data-a="shareAll">📤 Partager mes panneaux aux élèves (.xlsx)</button><button class="btn" data-a="hist">🕑 Historique (<span id="nHist">0</span>)</button></div>
+  <div class="lib" id="libMine"></div>
+  <input type="file" id="cfgFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+ </div>
+ <div class="card"><h2>✨ Exemples prêts à l'emploi</h2><div class="lib" id="libEx"></div></div>
+ <p class="mut" style="text-align:center">Astuce : « 📤 Partager mes panneaux » crée un fichier .xlsx à déposer sur l'ENT ; les élèves l'importent dans StatPanel (Applis EPS Élèves).</p>
+</section>
+
+<!-- ÉDITEUR -->
+<section id="vEdit" class="hide">
+ <div class="card"><h2>✏️ Paramétrer le panneau</h2>
+  <label class="f">Nom du panneau<input type="text" id="eNom" maxlength="50" placeholder="ex. Handball – tirs"></label>
+  <h3>Disposition</h3><div class="lay" id="eLay"></div>
+  <p class="mut hide" id="eCourtInfo"></p>
+  <div id="eGridOpts"><div class="grid2">
+   <div><h3>Nombre de boutons (12 max)</h3><span class="stp"><button type="button" class="ib" id="eMinus">−</button><b id="eN">6</b><button type="button" class="ib" id="ePlus">＋</button></span></div>
+   <div><h3>Groupes de boutons (zones)</h3><span class="seg" id="eZ"></span></div></div>
+   <div class="grid2" id="eZn" style="margin-top:10px"></div></div>
+  <h3>Boutons <span style="text-transform:none;letter-spacing:0;font-weight:500">— couleur · libellé · action positive (＋) ou négative (−) · valeur · zone</span></h3>
+  <div id="eBtns"></div>
+ </div>
+ <div class="card"><h2>⏱ Temps et périodes</h2>
+  <div class="row"><span class="seg" id="eChr"></span><span id="eDurW" class="row"><input type="number" id="eMin" min="0" max="180" style="width:80px"> min <input type="number" id="eSec" min="0" max="59" style="width:80px"> s</span></div>
+  <div class="grid2" style="margin-top:12px"><label class="f">Nom des périodes<select id="ePer"></select></label>
+   <label class="f" style="display:flex;align-items:center;gap:10px;margin-top:22px"><input type="checkbox" id="eVib" style="width:22px;height:22px;accent-color:#3d9bff"> Vibration à chaque clic</label></div>
+ </div>
+ <div class="row"><button class="btn" id="eBack">← Annuler</button><span style="flex:1"></span><button class="btn" id="eSave">💾 Enregistrer</button><button class="btn p" id="eGo">▶ Enregistrer et lancer</button></div>
+</section>
+
+<!-- LANCEMENT -->
+<section id="vSetup" class="hide">
+ <div class="card"><h2 id="sTitle"></h2>
+  <h3>Qui est observé ?</h3><span class="seg" id="sMode"></span>
+  <div id="sListe" class="who hide" style="margin-top:14px">⚠ Aucune liste d'élèves sur cet appareil. <label class="btn s" style="margin-left:6px">📂 Charger la liste (.xlsx / .csv de Mes Apps EPS)<input type="file" id="sListeIn" accept=".xlsx,.csv" hidden></label></div>
+  <div id="sClasse" class="hide" style="margin-top:14px"><label class="f" style="max-width:240px">Classe du ou des camarades<input type="text" id="sClasseIn" maxlength="15" placeholder="ex. 3PM"></label></div>
+  <div id="sCamps" style="margin-top:14px"></div>
+ </div>
+ <div class="row"><button class="btn" id="sBack">← Retour</button><span style="flex:1"></span><button class="btn p" id="sStart">▶ Démarrer le panneau</button></div>
+</section>
+
+<!-- BILAN -->
+<section id="vStats" class="hide">
+ <div id="stBody"></div>
+ <div class="card"><h2>📦 Enregistrer et exporter</h2><p class="mut" id="stNote" style="margin:0 0 12px"></p>
+  <div class="row"><button class="btn g" id="stSave"></button><button class="btn p" id="stEps">⬇ Exporter pour Mes Apps EPS (.xlsx)</button><button class="btn" id="stXlsx">⬇ Bilan détaillé (.xlsx)</button></div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="stResume">↺ Reprendre le comptage</button><button class="btn" id="stAgain">▶ Nouvelle observation</button><button class="btn" id="stHome">🏠 Accueil</button></div>
+ </div>
+</section>
+
+<!-- HISTORIQUE -->
+<section id="vHist" class="hide">
+ <div class="card"><h2>🕑 Historique des observations</h2>
+  <div class="row" style="margin:0 0 14px"><button class="btn" id="hBack">← Accueil</button><button class="btn p" id="hAll">⬇ Exporter toutes les observations (.xlsx Mes Apps EPS)</button></div>
+  <div class="lib" id="hList"></div></div>
+</section>
+</main>
+<section id="vRun" class="hide"></section>
+<footer>StatPanel - Prof <span class="ver"></span> · 🔒 Données enregistrées uniquement sur cet appareil (RGPD) · aucun serveur, aucun compte.</footer>
+<script src="version.js"></script>
+<script src="eps-core.js"></script>
+<script src="sp-xlsx.js"></script>
+<script>window.SP_MODE='prof';</script>
+<script src="statpanel.js"></script>
+</body></html>
