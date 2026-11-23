@@ -12,9 +12,12 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 const mem={};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return k in mem?clone(mem[k]):d}},
  set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){mem[k]=v}}};
-const K={panels:'statpanel_panels_v1',sess:'statpanel_session_v1',hist:'statpanel_hist_v1',cls:'statpanel_classe'};
+const K0={panels:'statpanel_panels_v1',sess:'statpanel_session_v1',hist:'statpanel_hist_v1',cls:'statpanel_classe'};
+/* version élèves : clés distinctes (même domaine que la version prof) ; reprise unique des données de la v1.0 */
+const K=MODE==='eleve'?{panels:'statpanel_el_panels',sess:'statpanel_el_session',hist:'statpanel_el_hist',cls:'statpanel_el_classe'}:K0;
+if(MODE==='eleve'&&store.get('statpanel_el_migre',null)==null){for(const k in K){const v=store.get(K0[k],null);if(v!=null&&store.get(K[k],null)==null)store.set(K[k],v)}store.set('statpanel_el_migre',1)}
 const PAL=['#22c55e','#10b981','#06b6d4','#3b82f6','#6366f1','#a855f7','#ec4899','#ef4444','#f97316','#f59e0b','#eab308','#64748b'];
-const PER=['Période','Set','Manche','Mi-temps','Quart-temps','Round','Séquence'];
+const PER=['Période','Set','Manche','Mi-temps','Quart-temps','Round','Séquence','Essai','Série','Passage'];
 const p2=n=>String(n).padStart(2,'0');
 const isoDay=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const hhmm=d=>p2(d.getHours())+':'+p2(d.getMinutes());
@@ -46,17 +49,48 @@ const layName=k=>(LAYOUTS.find(l=>l[0]===k)||LAYOUTS[0])[2];
 const courtButtons=k=>COURTS[k].btn.map(([label,type,val,color,zone])=>({label,type,val,color,zone}));
 const newBtn=(i,z)=>({label:'Action '+(i+1),type:'+',val:1,color:PAL[i%PAL.length],zone:z||0});
 function fromCourt(k,nom){return{id:uid(),nom:nom||COURTS[k].nom+' – zones de chute',layout:k,zones:[...COURTS[k].zones],buttons:courtButtons(k),chrono:{mode:'up',dur:600},periode:k==='grid'?'Période':'Set',vib:true}}
-function mk(nom,zones,btns,extra){return Object.assign({id:'ex_'+fileSafe(nom).toLowerCase(),ex:true,nom,layout:'grid',zones,
+function mk(nom,cat,zones,btns,extra){return Object.assign({id:'ex_'+fileSafe(nom).toLowerCase(),ex:true,cat,nom,layout:'grid',zones,
  buttons:btns.map(([label,type,val,color,zone])=>({label,type,val,color,zone})),chrono:{mode:'up',dur:600},periode:'Période',vib:true},extra||{})}
+const G1='#22c55e',G2='#10b981',CY='#06b6d4',BL='#3b82f6',IN='#6366f1',VI='#a855f7',PK='#ec4899',RD='#ef4444',OR='#f97316',AM='#f59e0b',YE='#eab308',SL='#64748b';
+const court=(k,nom)=>Object.assign(fromCourt(k,nom),{id:'ex_'+k,ex:true,cat:'Raquettes'});
 const EXAMPLES=[
- mk('Sports collectifs – bilan offensif/défensif',['Attaque','Défense'],[['But / panier','+',2,'#22c55e',0],['Tir cadré','+',1,'#10b981',0],['Tir non cadré','-',1,'#f97316',0],['Passe décisive','+',1,'#06b6d4',0],['Perte de balle','-',1,'#ef4444',0],
-  ['Interception','+',1,'#3b82f6',1],['Contre / dissuasion','+',1,'#6366f1',1],['Faute','-',1,'#ec4899',1]],{periode:'Mi-temps',chrono:{mode:'down',dur:600}}),
- mk('Arbitrage – volley-ball',['Décisions','Attitude'],[['Décision juste','+',1,'#22c55e',0],['Décision erronée','-',1,'#ef4444',0],['Faute non sifflée','-',1,'#f97316',0],
-  ['Geste réglementaire','+',1,'#3b82f6',1],['Coup de sifflet net','+',1,'#06b6d4',1],['Hésitation','-',1,'#ec4899',1]],{periode:'Set'}),
- Object.assign(fromCourt('badminton','Badminton – zones de chute'),{id:'ex_badminton',ex:true}),
- Object.assign(fromCourt('tennis','Tennis – zones de chute'),{id:'ex_tennis',ex:true}),
- Object.assign(fromCourt('tt','Tennis de table – placement'),{id:'ex_tt',ex:true}),
+ /* Sports collectifs */
+ mk('Handball – bilan du joueur','Sports collectifs',['Attaque','Défense'],[['But','+',2,G1,0],['Tir arrêté','+',1,G2,0],['Tir hors cadre','-',1,OR,0],['Passe décisive','+',1,CY,0],['Perte de balle','-',1,RD,0],['Marcher / reprise','-',1,PK,0],
+  ['Interception','+',1,BL,1],['Tir contré','+',1,IN,1],['Faute défensive','-',1,AM,1],['Exclusion 2 min','-',2,RD,1]],{periode:'Mi-temps',chrono:{mode:'down',dur:600}}),
+ mk('Football – bilan du joueur','Sports collectifs',['Attaque','Défense'],[['But','+',2,G1,0],['Tir cadré','+',1,G2,0],['Tir non cadré','-',1,OR,0],['Passe décisive','+',1,CY,0],['Dribble réussi','+',1,BL,0],['Perte de balle','-',1,RD,0],['Hors-jeu','-',1,PK,0],
+  ['Récupération','+',1,IN,1],['Tacle réussi','+',1,VI,1],['Faute','-',1,AM,1]],{periode:'Mi-temps',chrono:{mode:'down',dur:600}}),
+ mk('Basket-ball – feuille de stats','Sports collectifs',['Attaque','Défense'],[['Panier à 3 pts','+',3,G1,0],['Panier à 2 pts','+',2,G2,0],['Lancer franc réussi','+',1,CY,0],['Tir manqué','-',1,OR,0],['Passe décisive','+',1,BL,0],['Perte de balle','-',1,RD,0],['Marcher / reprise','-',1,PK,0],
+  ['Rebond','+',1,IN,1],['Interception','+',1,VI,1],['Contre','+',1,YE,1],['Faute personnelle','-',1,AM,1]],{periode:'Quart-temps',chrono:{mode:'down',dur:480}}),
+ mk('Flag football – bilan d\'équipe','Sports collectifs',['Attaque','Défense'],[['Touchdown','+',6,G1,0],['Conversion','+',1,G2,0],['Passe complète','+',1,CY,0],['Passe incomplète','-',1,OR,0],['Course gagnante','+',1,BL,0],['Interception subie','-',2,RD,0],
+  ['Flag arraché','+',1,IN,1],['Interception','+',2,VI,1],['Sack','+',2,YE,1],['Pénalité','-',1,AM,1]],{periode:'Mi-temps',chrono:{mode:'down',dur:600}}),
+ mk('Ultimate – bilan du joueur','Sports collectifs',['Attaque','Défense'],[['Point marqué','+',2,G1,0],['Passe réussie','+',1,CY,0],['Passe ratée (turnover)','-',1,OR,0],['Marcher','-',1,PK,0],['Compte de 10 (stall)','-',1,RD,0],
+  ['Block / interception','+',1,BL,1],['Pull réussi','+',1,IN,1],['Contact / faute','-',1,AM,1]],{chrono:{mode:'down',dur:600}}),
+ /* Combat */
+ mk('Boxe française – assaut','Combat',['Attaque','Défense','Sanctions'],[['Touche poing','+',1,CY,0],['Fouetté / chassé bas','+',1,BL,0],['Fouetté / chassé médian','+',2,IN,0],['Fouetté / chassé figure','+',3,VI,0],
+  ['Esquive / parade','+',1,G1,1],['Riposte','+',1,G2,1],['Touche reçue','-',1,OR,1],['Coup non contrôlé','-',2,RD,2],['Sortie de l\'aire','-',1,AM,2]],{periode:'Round',chrono:{mode:'down',dur:90}}),
+ mk('Lutte – combat','Combat',['Debout','Sol','Sanctions'],[['Amenée au sol','+',2,CY,0],['Projection','+',4,VI,0],['Sortie de l\'adversaire','+',1,BL,0],
+  ['Retournement','+',2,G1,1],['Mise en danger','+',2,G2,1],['Immobilisation','+',3,IN,1],['Passivité','-',1,AM,2],['Prise interdite','-',2,RD,2],['Sortie du tapis','-',1,OR,2]],{periode:'Manche',chrono:{mode:'down',dur:120}}),
+ /* Raquettes */
+ court('badminton','Badminton – zones de chute'),court('tennis','Tennis – zones de chute'),court('tt','Tennis de table – placement'),
+ /* Athlétisme */
+ mk('Lancers – qualité du geste','Athlétisme',['Technique','Résultat'],[['Élan rythmé','+',1,CY,0],['Double appui / placement','+',1,BL,0],['Bras retardé (fouet)','+',1,IN,0],['Blocage du côté gauche','+',1,VI,0],
+  ['Lancer dans le secteur','+',1,G1,1],['Record personnel','+',2,G2,1],['Lancer mordu','-',1,OR,1],['Hors secteur','-',1,RD,1]],{periode:'Essai'}),
+ mk('Relais – transmissions','Athlétisme',['Départ','Transmission'],[['Départ synchronisé','+',1,G1,0],['Départ trop tôt','-',1,OR,0],['Départ trop tard','-',1,AM,0],['Signal donné','+',1,CY,0],
+  ['Transmission dans la zone','+',2,G2,1],['Transmission hors zone','-',2,RD,1],['Témoin tombé','-',2,PK,1],['Main de réception stable','+',1,BL,1]],{periode:'Passage'}),
+ mk('Endurance – régularité de l\'allure','Athlétisme',['Allure','Gestion'],[['Tour à l\'allure','+',1,G1,0],['Tour trop rapide','-',1,OR,0],['Tour trop lent','-',1,AM,0],
+  ['Relance contrôlée','+',1,CY,1],['Arrêt / marche','-',1,RD,1],['Ressenti annoncé juste','+',1,BL,1]],{periode:'Séquence',chrono:{mode:'up',dur:600}}),
+ /* Entretien / forme */
+ mk('Step – enchaînement','Forme et entretien',['Exécution','Composition'],[['Bloc réussi','+',1,G1,0],['Erreur de pas','-',1,OR,0],['Décalage musical','-',1,AM,0],['Coordination bras','+',1,CY,0],['Arrêt / blanc','-',1,RD,0],
+  ['Transition fluide','+',1,BL,1],['Changement d\'orientation','+',1,IN,1],['Annonce du leader','+',1,VI,1]],{periode:'Séquence'}),
+ mk('Musculation – contrôle des séries','Forme et entretien',['Exécution','Sécurité'],[['Répétition conforme','+',1,G1,0],['Amplitude incomplète','-',1,OR,0],['Rythme respecté','+',1,CY,0],['Respiration adaptée','+',1,BL,0],
+  ['Dos gainé / aligné','+',1,IN,1],['Dos non gainé','-',2,RD,1],['Parade efficace','+',1,G2,1],['Charge non contrôlée','-',2,PK,1]],{periode:'Série'}),
+ /* Arbitrage */
+ mk('Arbitrage – volley-ball','Arbitrage',['Décisions','Attitude'],[['Décision juste','+',1,G1,0],['Décision erronée','-',1,RD,0],['Faute non sifflée','-',1,OR,0],
+  ['Geste réglementaire','+',1,BL,1],['Coup de sifflet net','+',1,CY,1],['Hésitation','-',1,PK,1]],{periode:'Set'}),
+ mk('Arbitrage – sports collectifs','Arbitrage',['Décisions','Attitude'],[['Décision juste','+',1,G1,0],['Décision erronée','-',1,RD,0],['Faute non sifflée','-',1,OR,0],['Avantage bien laissé','+',1,G2,0],
+  ['Geste réglementaire','+',1,BL,1],['Placement adapté','+',1,CY,1],['Explication aux joueurs','+',1,IN,1],['Hésitation','-',1,PK,1]],{periode:'Mi-temps'}),
 ];
+const CATS=[...new Set(EXAMPLES.map(e=>e.cat))];
 const panels=()=>store.get(K.panels,[]);
 const allPanels=()=>[...panels(),...EXAMPLES];
 const savePanel=p=>{const L=panels(),i=L.findIndex(x=>x.id===p.id);delete p.ex;if(i>=0)L[i]=p;else L.unshift(p);store.set(K.panels,L)};
@@ -72,16 +106,19 @@ function renderHome(){
  $('#resume').innerHTML=s&&!s.done?`<div class="card resume"><h2>⏸ Observation en cours</h2><p class="mut" style="margin:0 0 10px">${esc(s.panel.nom)} · ${esc(s.camps.map(c=>c.nom).join(' vs '))} · ${s.clicks.length} action(s)</p>
   <div class="row"><button class="btn p" data-a="resume">▶ Reprendre</button><button class="btn" data-a="finish">✓ Voir le bilan</button><button class="btn d" data-a="drop">🗑 Abandonner</button></div></div>`:'';
  const card=p=>`<div class="pc"><h4>${p.layout==='grid'?'🔲':COURTS[p.layout].emoji} ${esc(p.nom)}</h4>
-  <div class="row" style="gap:6px"><span class="tag">${esc(layName(p.layout))}</span><span class="tag">${p.buttons.length} bouton(s)</span>${p.layout==='grid'&&p.zones.length>1?`<span class="tag">${p.zones.length} zones</span>`:''}${p.ex?'<span class="tag">Exemple</span>':''}</div>
+  <div class="row" style="gap:6px"><span class="tag">${esc(layName(p.layout))}</span><span class="tag">${p.buttons.length} bouton(s)</span>${p.layout==='grid'&&p.zones.length>1?`<span class="tag">${p.zones.length} zones</span>`:''}${p.ex?`<span class="tag">${esc(p.cat||'Exemple')}</span>`:''}${p.consigne?'<span class="tag">📋 Consigne</span>':''}</div>
   <div class="dots">${p.buttons.map(b=>`<i style="background:${esc(b.color)}" title="${esc(b.label)}"></i>`).join('')}</div>
   <div class="acts"><button class="btn p s" data-a="go" data-id="${p.id}">▶ Lancer</button><button class="btn s" data-a="edit" data-id="${p.id}">✏️ ${p.ex?'Personnaliser':'Modifier'}</button>
   <button class="btn s" data-a="dup" data-id="${p.id}" title="Dupliquer">⧉</button><button class="btn s" data-a="share" data-id="${p.id}" title="Exporter ce panneau (.xlsx)">📤</button>${p.ex?'':`<button class="btn s d" data-a="del" data-id="${p.id}" title="Supprimer">🗑</button>`}</div></div>`;
  const mine=panels();
  $('#libMine').innerHTML=mine.length?mine.map(card).join(''):'<p class="mut">Aucun panneau personnel pour l\'instant : créez-en un ou partez d\'un exemple.</p>';
- $('#libEx').innerHTML=EXAMPLES.map(card).join('');
+ $('#exCats').innerHTML=['Toutes',...CATS].map(c=>`<button type="button" class="${exCat===c?'on':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+ $('#libEx').innerHTML=EXAMPLES.filter(e=>exCat==='Toutes'||e.cat===exCat).map(card).join('');
  $('#nHist').textContent=store.get(K.hist,[]).length;
 }
-async function homeClick(e){const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,p=allPanels().find(x=>x.id===b.dataset.id);
+let exCat='Toutes';
+async function homeClick(e){const c=e.target.closest('[data-cat]');if(c){exCat=c.dataset.cat;renderHome();return}
+ const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,p=allPanels().find(x=>x.id===b.dataset.id);
  if(a==='new')openEdit(null);
  else if(a==='edit')openEdit(p);
  else if(a==='dup'){const c=clone(p);c.id=uid();c.nom=p.nom+' (copie)';savePanel(c);renderHome();toast('Panneau dupliqué','ok')}
@@ -103,10 +140,10 @@ function openEdit(p){E=p?clone(p):{id:uid(),nom:'',layout:'grid',zones:['Zone 1'
  renderEdit();show('vEdit')}
 function renderEdit(){const c=E.layout!=='grid',z=E.zones.length;
  $('#eNom').value=E.nom;
- $('#eLay').innerHTML=LAYOUTS.map(([k,em,n])=>`<button type="button" class="${E.layout===k?'on':''}" data-lay="${k}"><span>${em}</span>${n}</button>`).join('');
+ $('#eCons').value=E.consigne||'';$('#eConsW').classList.toggle('hide',MODE!=='prof');
  $('#eGridOpts').classList.toggle('hide',c);
  $('#eCourtInfo').classList.toggle('hide',!c);
- if(c)$('#eCourtInfo').innerHTML=`${COURTS[E.layout].emoji} Le demi-terrain adverse est découpé en zones cibles (filet en haut). Vous pouvez renommer chaque zone et changer son type, sa valeur et sa couleur. Zones regroupées : ${E.zones.map(esc).join(' · ')}.`;
+ if(c)$('#eCourtInfo').innerHTML=`${COURTS[E.layout].emoji} Exemple sur terrain : le demi-terrain adverse est découpé en zones cibles (filet en haut). Vous pouvez renommer chaque zone et changer son type, sa valeur et sa couleur. Zones regroupées : ${E.zones.map(esc).join(' · ')}.`;
  $('#eN').textContent=E.buttons.length;
  $('#eZ').innerHTML=[1,2,3,4].map(n=>`<button type="button" class="${z===n?'on':''}" data-z="${n}">${n===1?'Aucune':n}</button>`).join('');
  $('#eZn').innerHTML=z>1?E.zones.map((n,i)=>`<label class="f">Nom de la zone ${i+1}<input type="text" data-zn="${i}" value="${esc(n)}" maxlength="30"></label>`).join(''):'';
@@ -139,6 +176,7 @@ function editEvents(){
  });
  f.addEventListener('input',e=>{const t=e.target;
   if(t.id==='eNom')E.nom=t.value;
+  else if(t.id==='eCons')E.consigne=t.value.slice(0,800);
   else if(t.dataset.zn!=null){E.zones[+t.dataset.zn]=t.value;$$('#eBtns select option[value="'+t.dataset.zn+'"]').forEach(o=>o.textContent=t.value)}
   else if(t.dataset.k){const i=+t.closest('.brow').dataset.i,k=t.dataset.k;
    E.buttons[i][k]=k==='val'?Math.abs(parseFloat(t.value)||0):k==='zone'?+t.value:t.value;
@@ -148,7 +186,7 @@ function editEvents(){
   else if(t.id==='eVib')E.vib=t.checked;
  });
  f.addEventListener('change',e=>{if(e.target.id==='ePer')E.periode=e.target.value;if(e.target.id==='eVib')E.vib=e.target.checked});
- const save=()=>{E.nom=(E.nom||'').trim()||'Mon panneau';E.buttons.forEach((b,i)=>{b.label=(b.label||'').trim()||'Action '+(i+1)});
+ const save=()=>{E.nom=(E.nom||'').trim()||'Mon panneau';E.consigne=(E.consigne||'').trim();if(!E.consigne)delete E.consigne;delete E.cat;E.buttons.forEach((b,i)=>{b.label=(b.label||'').trim()||'Action '+(i+1)});
   if(E.layout==='grid'){E.zones=E.zones.map((z,i)=>(z||'').trim()||'Zone '+(i+1));if(E.zones.length===1)E.buttons.forEach(b=>b.zone=0)}
   savePanel(clone(E));return E};
  $('#eSave').onclick=()=>{save();toast('Panneau enregistré','ok');renderHome();show('vHome')};
@@ -157,13 +195,13 @@ function editEvents(){
 }
 
 /* ───────── PARTAGE DE PANNEAUX (fichier .xlsx de configuration) ───────── */
-const CFG_SHEET='StatPanel_Config',CFG_H=['Panneau','Disposition','Zones','Chrono','Durée (s)','Périodes','Vibration','N°','Libellé','Type','Valeur','Couleur','Zone'];
+const CFG_SHEET='StatPanel_Config',CFG_H=['Panneau','Disposition','Zones','Chrono','Durée (s)','Périodes','Vibration','Consigne','N°','Libellé','Type','Valeur','Couleur','Zone'];
 const CHR_N={up:'Chronomètre',down:'Compte à rebours'};
 function exportConfig(L){
- const rows=[CFG_H];L.forEach(p=>p.buttons.forEach((b,i)=>rows.push([p.nom,layName(p.layout),p.zones.join(' ; '),CHR_N[p.chrono.mode],p.chrono.dur,p.periode,p.vib===false?'Non':'Oui',i+1,b.label,b.type==='-'?'Négative':'Positive',Math.abs(+b.val||0),b.color,p.zones[b.zone]||p.zones[0]])));
+ const rows=[CFG_H];L.forEach(p=>p.buttons.forEach((b,i)=>rows.push([p.nom,layName(p.layout),p.zones.join(' ; '),CHR_N[p.chrono.mode],p.chrono.dur,p.periode,p.vib===false?'Non':'Oui',i?'':(p.consigne||''),i+1,b.label,b.type==='-'?'Négative':'Positive',Math.abs(+b.val||0),b.color,p.zones[b.zone]||p.zones[0]])));
  const lis=[['StatPanel – fichier de panneaux'],['À importer dans StatPanel (élèves) ou StatPanel - Prof : bouton « 📥 Importer des panneaux ».'],
   ['La feuille « '+CFG_SHEET+' » peut être modifiée dans un tableur : une ligne par bouton, 12 boutons maximum par panneau.'],
-  ['Disposition : Grille libre, Tennis, Badminton ou Tennis de table. Type : Positive ou Négative. Couleur : code #RRVVBB.'],[],['Créé le',new Date().toLocaleString('fr-FR')],['Panneaux',L.map(p=>p.nom).join(' ; ')]];
+  ['Disposition : Grille libre (ou Tennis, Badminton, Tennis de table pour les exemples sur terrain). Type : Positive ou Négative. Couleur : code #RRVVBB.'],['Consigne : texte affiché aux élèves au-dessus du panneau (sur la première ligne du panneau).'],[],['Créé le',new Date().toLocaleString('fr-FR')],['Panneaux',L.map(p=>p.nom).join(' ; ')]];
  const name=L.length===1?'StatPanel_'+fileSafe(L[0].nom)+'.xlsx':'StatPanel_Panneaux_'+isoDay(new Date())+'.xlsx';
  SPX.download(SPX.write([{name:'Lisez-moi',rows:lis},{name:CFG_SHEET,rows}]),name);toast('Fichier de panneaux exporté','ok')}
 async function importConfig(file){try{
@@ -182,6 +220,7 @@ async function importConfig(file){try{
   else{if(!zones.length)zones=['Zone 1'];zones=zones.slice(0,4);buttons.forEach(b=>{if(b.zone>=zones.length)b.zone=zones.length-1})}
   const dur=parseInt(g0('Durée (s)'))||600,old=L.find(p=>p.nom===nom);
   const p={id:old?old.id:uid(),nom,layout,zones,buttons,chrono:{mode:EPS.norm(g0('Chrono')).includes('rebours')?'down':'up',dur},periode:g0('Périodes')||'Période',vib:EPS.norm(g0('Vibration'))!=='non'};
+  const cons=rs.map(g=>g('Consigne')).find(Boolean);if(cons)p.consigne=cons.slice(0,800);
   if(old){L[L.indexOf(old)]=p;upd++}else{L.unshift(p);add++}}
  if(!add&&!upd)throw new Error('Aucun panneau trouvé dans le fichier.');
  store.set(K.panels,L);renderHome();toast(`✅ ${add} panneau(x) ajouté(s)${upd?`, ${upd} mis à jour`:''}.`,'ok');
@@ -199,6 +238,7 @@ async function openSetup(p){await loadEleves();
 function campTitle(i){return S.mode==='avb'?(i?'Camp B':'Camp A'):S.mode==='equipe'?'Équipe observée':'Élève observé'}
 function renderSetup(){
  $('#sTitle').textContent='▶ '+S.panel.nom;
+ $('#sCons').innerHTML=S.panel.consigne?consHTML(S.panel.consigne,false):'';
  $('#sMode').innerHTML=[['solo','👤 Un élève'],['equipe','👥 Une équipe'],['avb','⚔️ A contre B']].map(([k,n])=>`<button type="button" class="${S.mode===k?'on':''}" data-m="${k}">${n}</button>`).join('');
  const n=S.mode==='avb'?2:1;
  $('#sCamps').innerHTML=`<div class="${n===2?'cmp':''}">`+[0,1].slice(0,n).map(i=>{const c=S.camps[i];
@@ -286,6 +326,7 @@ function drawRun(){const P=R.panel,avb=R.mode==='avb';
   <button class="tb" id="rUndo" title="Annuler le dernier clic">↶</button>
   <button class="tb" id="rFull" title="Plein écran">⛶</button>
   <button class="tb on" id="rEnd" title="Terminer et voir le bilan">✓ Fin</button></div>
+  ${P.consigne?`<div id="rCons">${consHTML(P.consigne,true)}</div>`:''}
   <div class="stage ${avb?'avb':''}">${R.camps.map((c,ci)=>`<div class="pane ${avb?(ci?'b':'a'):''}">${avb?`<div class="phead"><span class="nm">${ci?'🅱':'🅰'} ${esc(c.nom)}</span><span class="mut" id="rPN${ci}"></span><span class="sc" id="rSc${ci}">0</span></div>`:''}
    <div class="board" data-camp="${ci}">${boardHTML(P,ci)}</div></div>`).join('')}</div>`;
  layoutBoards();refreshCounts();updClock();
@@ -293,6 +334,7 @@ function drawRun(){const P=R.panel,avb=R.mode==='avb';
  $('#rQuit').onclick=()=>{persist();clearInterval(tick);renderHome();show('vHome')};
  $('#rClk').onclick=()=>{toggleClock();updClock()};
  $('#rUndo').onclick=undo;
+ const rc=$('#rCons .cons');if(rc)rc.onclick=()=>{consMin=rc.classList.toggle('min');layoutBoards()};
  $('#rPer').onclick=nextPeriod;
  $('#rFull').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
  $('#rEnd').onclick=()=>{if(!confirm('Terminer l\'observation et afficher le bilan ?'))return;if(R.chr.run)toggleClock();R.done=true;persist();clearInterval(tick);openStats(R)};
@@ -351,7 +393,7 @@ function renderStats(){const s=ST,P=s.panel,avb=s.mode==='avb',all=s.camps.map((
   ${s.periodes.length>1?`<h3>Par ${esc(P.periode.toLowerCase())}</h3><table class="t"><thead><tr><th></th><th class="n">Score</th><th class="n">+</th><th class="n">−</th><th class="n">Réussite</th></tr></thead><tbody>${st.per.map(q=>`<tr><td>${esc(q.nom)}</td><td class="n"><b>${num(q.pts)}</b></td><td class="n">${q.pos}</td><td class="n">${q.neg}</td><td class="n">${q.n?Math.round(q.pos/q.n*100)+'%':'–'}</td></tr>`).join('')}</tbody></table>`:''}
   </div>`};
  const att=s.camps.map(c=>c.membres.length).reduce((a,b)=>a+b,0);
- $('#stBody').innerHTML=`<div class="card"><h2>📊 ${esc(P.nom)}</h2><p class="mut" style="margin:0">${frDate(s.date)} à ${esc(s.heure)} · ${s.mode==='avb'?'A contre B':s.mode==='equipe'?'Équipe':'Individuel'} · durée ${fmt(durMs(s))} · ${s.clicks.length} clic(s)${s.periodes.length>1?' · '+s.periodes.length+' '+esc(P.periode.toLowerCase())+'s':''}${s.observateur?' · observé par '+esc(s.observateur):''}</p></div>
+ $('#stBody').innerHTML=`<div class="card"><h2>📊 ${esc(P.nom)}</h2><p class="mut" style="margin:0">${frDate(s.date)} à ${esc(s.heure)} · ${s.mode==='avb'?'A contre B':s.mode==='equipe'?'Équipe':'Individuel'} · durée ${fmt(durMs(s))} · ${s.clicks.length} clic(s)${s.periodes.length>1?' · '+s.periodes.length+' '+esc(P.periode.toLowerCase())+'s':''}${s.observateur?' · observé par '+esc(s.observateur):''}</p>${P.consigne?'<div style="margin-top:12px">'+consHTML(P.consigne,false)+'</div>':''}</div>
   <div class="${avb?'cmp':''}">${s.camps.map(campCard).join('')}</div>
   <div class="card"><h2>🕑 Chronologie</h2><div class="tl">${timelineHTML(s)}</div></div>`;
  $('#stSave').innerHTML=MODE==='prof'?'💾 Enregistrer dans Mes Apps EPS':'💾 Enregistrer sur cet appareil';
@@ -361,6 +403,8 @@ function renderStats(){const s=ST,P=s.panel,avb=s.mode==='avb',all=s.camps.map((
   :`${att} élève(s) recevront ce bilan : ${s.camps.flatMap(c=>c.membres).map(fullName).map(esc).join(', ')}.`;
  $('#stResume').classList.toggle('hide',!!s.saved||!store.get(K.sess,null)||store.get(K.sess,null).id!==s.id);
 }
+function consHTML(t,fold){return`<div class="cons${fold&&consMin?' min':''}" ${fold?'role="button" title="Afficher / réduire la consigne"':''}><span class="ci">📋</span><div class="ct2"><b>Consigne</b>${esc(t).replace(/\n/g,'<br>')}</div>${fold?'<span class="cf">▾</span>':''}</div>`}
+let consMin=false;
 const S_MODE_ICON=s=>s.mode==='equipe'?'👥':'👤';
 const frDate=iso=>{const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(iso||'');return m?`${m[3]}/${m[2]}/${m[1]}`:iso};
 function heatHTML(P,st){const C=COURTS[P.layout],mx=Math.max(1,...st.byBtn),cells=[],ex=[];

@@ -24,7 +24,7 @@
   <div class="lib" id="libMine"></div>
   <input type="file" id="cfgFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
  </div>
- <div class="card"><h2>✨ Exemples prêts à l'emploi</h2><div class="lib" id="libEx"></div></div>
+ <div class="card"><h2>✨ Exemples prêts à l'emploi</h2><div class="seg" id="exCats" style="margin:0 0 14px"></div><div class="lib" id="libEx"></div></div>
  <p class="mut" style="text-align:center">Astuce : « 📤 Partager mes panneaux » crée un fichier .xlsx à déposer sur l'ENT ; les élèves l'importent dans StatPanel (Applis EPS Élèves).</p>
 </section>
 
@@ -32,7 +32,7 @@
 <section id="vEdit" class="hide">
  <div class="card"><h2>✏️ Paramétrer le panneau</h2>
   <label class="f">Nom du panneau<input type="text" id="eNom" maxlength="50" placeholder="ex. Handball – tirs"></label>
-  <h3>Disposition</h3><div class="lay" id="eLay"></div>
+  <label class="f" id="eConsW">📋 Consigne pour les élèves <span style="font-weight:500">(facultative — affichée au-dessus du panneau, aussi dans l'appli élève après import)</span><textarea id="eCons" maxlength="800" placeholder="ex. Observe ton camarade pendant 3 minutes. Clique à chaque tir : vert s'il est cadré, rouge sinon."></textarea></label>
   <p class="mut hide" id="eCourtInfo"></p>
   <div id="eGridOpts"><div class="grid2">
    <div><h3>Nombre de boutons (12 max)</h3><span class="stp"><button type="button" class="ib" id="eMinus">−</button><b id="eN">6</b><button type="button" class="ib" id="ePlus">＋</button></span></div>
@@ -52,6 +52,7 @@
 <!-- LANCEMENT -->
 <section id="vSetup" class="hide">
  <div class="card"><h2 id="sTitle"></h2>
+  <div id="sCons"></div>
   <h3>Qui est observé ?</h3><span class="seg" id="sMode"></span>
   <div id="sListe" class="who hide" style="margin-top:14px">⚠ Aucune liste d'élèves sur cet appareil. <label class="btn s" style="margin-left:6px">📂 Charger la liste (.xlsx / .csv de Mes Apps EPS)<input type="file" id="sListeIn" accept=".xlsx,.csv" hidden></label></div>
   <div id="sClasse" class="hide" style="margin-top:14px"><label class="f" style="max-width:240px">Classe du ou des camarades<input type="text" id="sClasseIn" maxlength="15" placeholder="ex. 3PM"></label></div>
