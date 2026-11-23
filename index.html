@@ -11,8 +11,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="statpanel.css">
+
+<style id="titre-moderne">/* Titre en casse mixte + logo mis en valeur, aux couleurs du logo */
+header.top h1{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important;font-style:italic!important;font-weight:900!important;text-transform:none!important;letter-spacing:.005em!important;line-height:1.08;font-size:1.5rem!important;background:none!important;-webkit-text-stroke:0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 0 #06122e,0 4px 12px rgba(0,0,0,.45)!important}
+header.top h1 .tm{background:linear-gradient(180deg,#8ee8ff,#09a6da 72%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:#09a6da!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;filter:drop-shadow(0 2px 0 #06122e)}
+header.top h1 small,header.top h1 em{font-style:normal!important;text-shadow:none!important;-webkit-text-fill-color:currentColor!important}
+header.top img{border-radius:22%!important;box-shadow:0 0 0 2px rgba(255,255,255,.3),0 0 22px rgba(9,166,218,.5),0 6px 16px rgba(0,0,0,.4)!important;transition:transform .3s}
+header.top img:hover{transform:rotate(-5deg) scale(1.05)}
+@media(max-width:520px){header.top h1{font-size:calc(1.5rem * .8)!important}}
+header.top h1 .tp{font-size:.55em;font-weight:800;vertical-align:middle;background:linear-gradient(135deg,#3d9bff,#0b2257);color:#fff;padding:2px 9px;border-radius:999px;border:1.5px solid #8ee8ff;margin-left:2px}</style>
 </head><body>
-<header class="top"><img src="icons/icon-192.png" alt=""><div><h1>StatPanel - Prof</h1><p>Compter, analyser, enregistrer dans Mes Apps EPS</p></div><span class="sp"></span><a class="btn s" href="https://vinztoc.github.io/Mes_Apps_EPS/">↩ Mes Apps EPS</a></header>
+<header class="top"><img src="icons/icon-192.png" alt=""><div><h1>Stat<span class="tm">Panel</span> <em class="tp">Prof</em></h1><p>Compter, analyser, enregistrer dans Mes Apps EPS</p></div><span class="sp"></span><a class="btn s" href="https://vinztoc.github.io/Mes_Apps_EPS/">↩ Mes Apps EPS</a></header>
 
 <main>
 <!-- ACCUEIL -->
