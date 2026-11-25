@@ -1,6 +1,6 @@
 /* Service worker StatPanel - Prof – tout est mis en cache : l'app fonctionne sans réseau.
    Pour publier une mise à jour : changer VERSION ci-dessous (et APP_VERSION dans version.js). */
-const VERSION='1.1.3';
+const VERSION='1.1.4';
 const CACHE='statpanel-prof-'+VERSION;
 const CORE=['footer.js','nouveautes.js','nouveautes.json',"./", "index.html", "statpanel.js", "statpanel.css", "sp-xlsx.js", "eps-core.js", "version.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
